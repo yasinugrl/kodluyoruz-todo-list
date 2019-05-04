@@ -1,68 +1,47 @@
 import React, { Component } from 'react';
 import { View, Text, Dimensions, TextInput, FlatList, AsyncStorage } from 'react-native';
+import { connect } from 'react-redux';
+
+import { getTodoList } from '../actions';
 
 import Button from './Button';
 import Items from './Items';
 
-const { width, height } = Dimensions.get('window');
+import { listData } from './const'
 
+const { width, height } = Dimensions.get('window');
 
 
 class Main extends Component {
 
-    state = {
-        input: '',
-        text: '',
-        data: []
+    componentWillMount() {
+        // console.log('props değerleri:', this.props);
+        // AsyncStorage.getItem('data4', (err, result) => {
+        //     if(result != null) {
+        //         const array = JSON.parse(result)
+        //         console.log('gelene data', array);
+        //         this.setState({
+        //             data: array 
+        //         });
+        //         listData.data = array;
+        //     }
+        //   });
+        
     }
 
-    componentWillMount() {
-        const value = AsyncStorage.getItem('data1', (err, result) => {
-            if(result != null) {
-                const array = result.split(",");
-                console.log('gelen ata', array[0]);
-                this.setState({
-                    data: array 
-                });
-            }
-          });
-        
+    componentDidMount() {
+        this.props.getTodoList();
     }
     render() {
         return(
             <View style={styles.view2}>
-                <TextInput
-                    style={styles.inputStyle}
-                    onChangeText={(input) => this.setState({ input })}
-                    value={this.state.input}
-                    placeholder={'Başlık Giriniz'}
-                />
-                <TextInput
-                    style={[styles.inputStyle, { height: 75 }]}
-                    onChangeText={(input) => this.setState({ input })}
-                    value={this.state.input}
-                    multiline={true}
-                    numberOfLines={10}
-                    placeholder={'Açıklama Giriniz'}
-                />
-
-                <Button
-                onClick={() => { 
-                    this.setState(prevState => ({
-                        data: [...prevState.data, this.state.input]
-                    }));
-
-                    AsyncStorage.setItem('data1', this.state.data.toString());
-                }}
-                title={'Kaydet'}
-                style={{ backgroundColor: '#b2871a'}}
-                />
-
                 <FlatList
                     style={{ backgroundColor: '', width, marginTop: 20}}
-                    data={this.state.data}
+                    data={this.props.data}
                     keyExtractor={(item, index) => index.toString()}
-                    renderItem={({item}) => <Items data={item}
+                    renderItem={({item, index}) => <Items 
+                    data={item}
+                    index={index}
                     />
                     }
                 />
@@ -81,15 +60,11 @@ const styles = {
         paddingTop: 20,
         
     },
-    
-    inputStyle: {
-        height: 40, 
-        width: width * 0.9,
-        borderColor: 'gray', 
-        borderWidth: 1,
-        marginBottom: 10,
-        paddingLeft: 5,
-    }
   };
 
-export default Main;
+const mapStateToProps = ({ todoListResponse }) => {
+    console.log('globalden Gelen liste objesi ', todoListResponse);
+    return { data: todoListResponse.data }
+};
+
+export default connect(mapStateToProps, { getTodoList })(Main);

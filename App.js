@@ -1,12 +1,23 @@
 import React, {Component} from 'react';
-import {  Text, View, Dimensions, SafeAreaView} from 'react-native';
+import {  Text, View, Dimensions, Platform} from 'react-native';
+import { createStore, applyMiddleware } from 'redux';
+import { Provider } from 'react-redux';
+import ReduxThunk from 'redux-thunk';
+import logger from 'redux-logger'
 import Bottom from './components/Bottom';
 import { Header } from './components/Header';
 
-import Main from './components/Main'
+import reducers from './reducers';
 
+
+
+import List from './components/Main'
+import AddList from './components/AddList'
+
+import { Router, Scene, Stack, Actions } from 'react-native-router-flux';
+
+// import RealmDB from './components/RealmDB';
 const { width, height } = Dimensions.get('window');
-
 
 export default class App extends Component {
 
@@ -18,40 +29,64 @@ export default class App extends Component {
 
     isPremium: true
   }
-
-  componentWillMount() {
-    console.log('componentWillMount');
-  }
-  componentDidMount() {
-    console.log('componentDidMount');
+  renderRight() {
+    return(
+      <Text 
+      onPress={() => {
+        Actions.addlist({ isUpdate: false });
+      }}
+      style={{ paddingRight: 10, color: 'blue' }}>Add Item</Text>
+    );
   }
 
   render() {
+    const store = createStore(reducers, {}, applyMiddleware(ReduxThunk, logger));
 
-    const { isPremium, premiumArray, defaultArray } = this.state;
-
-    console.log('state', this.state);
-    
-
-    console.log('render');
     return (
-      <SafeAreaView style={styles.container}>
+      <Provider store={store}>
+      <Router 
+        navigationBarStyle={styles.navBar}
+        titleStyle={styles.titleStyle}
+      >
+       <Stack key="root">
+        <Scene 
+          key="list" 
+          component={List} 
+          title="TODO LIST"
+          initial
+          renderRightButton={this.renderRight()}
+        />
 
-          <Header isLogin={true} />
+        <Scene 
+          key="addlist" 
+          component={AddList} 
+          title="ADD LIST"
+        />
 
-          <Main />
-
-      </SafeAreaView>
+       </Stack>
+      </Router>
+      </Provider>
     );
   }
 }
 
 const styles = {
+  navBar: {
+    backgroundColor: 'pink'
+  },
+  titleStyle: {
+    color: 'white'
+  },
   container: {
     flex: 1,
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    backgroundColor: '#ededed',
-    flexDirection: 'column',
+
+    ...Platform.select({
+      ios: {
+        backgroundColor: 'red',
+      },
+      android: {
+        backgroundColor: 'blue',
+      },
+    }),
   },
 };

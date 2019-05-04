@@ -7,6 +7,10 @@ const { width, height } = Dimensions.get('window');
 
 class Bottom extends Component {
 
+    constructor(props) {
+        super(props);
+    }
+
     componentWillMount() {
         
     }
